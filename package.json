@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start:backend": "npx ts-node backend/backend.ts",
-    "start:frontend": "npm start --prefix frontend",
-    "start:all": "concurrently \"npm run start:backend\" \"npm run start:frontend\""
+    "start": "npx ts-node backend/backend.ts"
   },
   "keywords": [],
   "author": "",
