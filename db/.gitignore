@@ -1,0 +1,10 @@
+# Ignore database files
+*.db
+*.csv
+
+# Already suggested
+node_modules/
+logs/
+*.log
+.env
+dist/
