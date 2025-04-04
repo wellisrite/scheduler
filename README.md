@@ -12,3 +12,4 @@ A scheduling application with a React frontend and Node.js backend.
    ```bash
    git clone https://github.com/your-username/scheduler.git
    cd scheduler# scheduler
+# scheduler
