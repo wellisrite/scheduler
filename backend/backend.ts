@@ -69,6 +69,61 @@ app.get("/api/schedule", async (req, res) => {
   }
 });
 
+app.get("/api/schedule/status", async (req, res) => {
+  const db = await openDatabase();
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const filterDate = String(req.query.date || today);
+
+    const rows = await db.all(
+      "SELECT * FROM schedule WHERE date = ? ORDER BY hour ASC",
+      [filterDate]
+    );
+
+    const now = new Date();
+    const hourOffset = 4; // adjust based on your desired timezone
+    const localNow = new Date(now.getTime() - hourOffset * 60 * 60 * 1000);
+    const currentHour = localNow.getHours();
+    const currentMinute = localNow.getMinutes();
+    const currentFloat = currentHour + currentMinute / 60;
+
+    let currentMessage = "No current task";
+    let nextMessage = "No upcoming tasks";
+
+    for (let i = 0; i < rows.length; i++) {
+      const { hour, task } = rows[i];
+      const [start, end] = hour.split("-").map(Number);
+
+      if (currentFloat >= start && currentFloat < end) {
+        currentMessage = `🔔 ${task}`;
+      } else if (start > currentFloat) {
+        const diffMinutes = Math.round((start - currentFloat) * 60);
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+
+        const timeString = [
+          hours > 0 ? `${hours} hour${hours > 1 ? "s" : ""}` : "",
+          minutes > 0 ? `${minutes} minute${minutes > 1 ? "s" : ""}` : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        nextMessage = `➡️ ${task} in ${timeString}`;
+        break; // we only need the next one
+      }
+    }
+
+    res.json({ currentMessage, nextMessage });
+  } catch (err) {
+    logger.error("status endpoint error", err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await db.close();
+  }
+});
+
+
+
 app.post("/api/schedule", async (req, res) => {
   const { date, hour, task } = req.body;
   const db = await openDatabase();
